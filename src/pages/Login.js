@@ -1,10 +1,35 @@
-import React from 'react';
-import { Text, View, Image, TextInput, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import api from '../services/api'
+import { Text, View, AsyncStorage, KeyboardAvoidingView, Image, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import logo from '../assets/logo.png'
+import { Platform } from '@unimodules/core';
 
-export default function Login(){
+export default function Login({ navigation }){
+    const [email, setEmail] = useState('');
+    const [techs, setTechs] = useState('');
+
+    useEffect(() => {
+        AsyncStorage.getItem('user').then(user => {
+            if(user)
+                navigation.navigate('List')
+        })
+    },[])
+
+    async function handleSubmit(){
+        const res = await api.post('/sessions',{
+            email
+        })
+
+        const { _id } = res.data
+        
+        await AsyncStorage.setItem('user', _id)
+        await AsyncStorage.setItem('techs', techs)
+
+        navigation.navigate('List')
+
+    }
     return (
-    <View style={style.container}>
+    <KeyboardAvoidingView /*enabled={Platform.OS === 'ios'}*/ behavior="padding" style={style.container}>
         <Image source={logo}></Image>    
 
         <View style={style.form}>
@@ -16,6 +41,7 @@ export default function Login(){
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
+                onChangeText={setEmail}
             />
 
             <Text style={style.label}>TECNOLOGIAS *</Text>
@@ -25,16 +51,15 @@ export default function Login(){
                 placeholderTextColor="#999"            
                 autoCapitalize="words"
                 autoCorrect={false}
+                onChangeText={setTechs}
             />
 
+            <TouchableOpacity onPress={handleSubmit} style={style.button}>
+                <Text style={style.buttonText}>Encontrar spots</Text>
+            </TouchableOpacity>
 
-
-
-
-        </View>
-
-        
-    </View>
+        </View>        
+    </KeyboardAvoidingView>
     )
 }
 
@@ -63,5 +88,18 @@ const style = StyleSheet.create({
         height: 44,
         marginBottom: 20,
         borderRadius: 2
+    },
+    button:{
+        height: 42,
+        backgroundColor: '#f05a5b',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 2,
+
+    },
+    buttonText:{
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 16,
     },
 })
