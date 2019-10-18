@@ -4,14 +4,17 @@ import { View, Text, StyleSheet, Image, FlatList, TouchableOpacity } from 'react
 
 import api from '../services/api'
 
-export default function SpotList({tech}){
+export default withNavigation(SpotList)
+
+function SpotList({ tech, navigation }){
     const [spots, setSpots] = useState([])
     useEffect(()=>{
         api.get('/spots', {params: { techs: tech }})
                 .then((res) => {setSpots(res.data)})
     },[])
-    function handleNavigate(){
-        navigation.navigate('Book')
+    function handleNavigate(id){
+        console.log(id)
+        navigation.navigate('Book', { id })
     }
 
     const baseUrl = api.defaults.baseURL
@@ -30,7 +33,7 @@ export default function SpotList({tech}){
                         <Image style={style.thumbnail} source={{ uri: `${baseUrl}/files/${item.thumbnail}` }} />
                         <Text style={style.company}>{item.company}</Text>
                         <Text style={style.price}>{item.price ? `R$${item.price}/dia` : 'GRATUITO' }</Text>
-                        <TouchableOpacity onPress={() => {handleNavigate}} style={style.button}>
+                        <TouchableOpacity onPress={() => handleNavigate(item._id)} style={style.button}>
                             <Text style={style.buttonText}>Solicitar reserva</Text>
                         </TouchableOpacity>
                     </View>
